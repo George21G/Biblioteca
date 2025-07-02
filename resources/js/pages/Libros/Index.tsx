@@ -11,7 +11,9 @@ import {
     Eye, 
     BookOpen,
     CheckCircle2,
-    XCircle
+    XCircle,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { type BreadcrumbItem } from '@/types';
 
@@ -148,6 +150,48 @@ export default function LibrosIndex({ libros }: Props) {
                         {libros.data.length === 0 && (
                             <div className="text-center py-8 text-muted-foreground">
                                 No hay libros registrados
+                            </div>
+                        )}
+
+                        {/* Paginación */}
+                        {libros.last_page > 1 && (
+                            <div className="flex items-center justify-between mt-6">
+                                <div className="text-sm text-muted-foreground">
+                                    Mostrando {(libros.current_page - 1) * libros.per_page + 1} a {Math.min(libros.current_page * libros.per_page, libros.total)} de {libros.total} resultados
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => router.get('/libros', { page: libros.current_page - 1 }, { preserveState: true })}
+                                        disabled={libros.current_page === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                        Anterior
+                                    </Button>
+                                    <div className="flex items-center space-x-1">
+                                        {Array.from({ length: libros.last_page }, (_, i) => i + 1).map((page) => (
+                                            <Button
+                                                key={page}
+                                                variant={page === libros.current_page ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => router.get('/libros', { page }, { preserveState: true })}
+                                                className="w-8 h-8 p-0"
+                                            >
+                                                {page}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => router.get('/libros', { page: libros.current_page + 1 }, { preserveState: true })}
+                                        disabled={libros.current_page === libros.last_page}
+                                    >
+                                        Siguiente
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </CardContent>
