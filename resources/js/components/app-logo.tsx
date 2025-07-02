@@ -1,14 +1,12 @@
-import AppLogoIcon from './app-logo-icon';
+import React from 'react';
+import { Link } from '@inertiajs/react';
 
 export default function AppLogo() {
     return (
-        <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <AppLogoIcon className="size-5 fill-current text-white dark:text-black" />
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">Laravel Starter Kit</span>
-            </div>
-        </>
+        <Link href="/" aria-label="Ir al inicio">
+            <span className="block w-10 h-10">
+                <img src="https://millonarios.com.co/wp-content/uploads/2024/08/logo2.png" alt="Millonarios FC" className="w-full h-full object-contain" />
+            </span>
+        </Link>
     );
 }
