@@ -14,12 +14,20 @@ class UsuarioController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request)
     {
+        // Forzar JSON si la ruta es /api/usuarios
+        if ($request->is('api/usuarios')) {
+            $usuarios = Usuario::with('institucion')
+                ->select('id', 'nombre', 'documento', 'tipo', 'institucion_id')
+                ->orderBy('nombre')
+                ->get();
+            return response()->json($usuarios);
+        }
+        // Si no, devolver la vista de Inertia
         $usuarios = Usuario::with('institucion')
             ->orderBy('nombre')
             ->paginate(10);
-
         return Inertia::render('Usuarios/Index', [
             'usuarios' => $usuarios
         ]);
@@ -45,7 +53,7 @@ class UsuarioController extends Controller
             'nombre' => 'required|string|max:255',
             'documento' => 'required|string|max:50|unique:usuarios,documento',
             'tipo' => 'required|in:natural,estudiante,empresa',
-            'institucion_id' => 'required|exists:instituciones,id',
+            'institucion_id' => 'required_if:tipo,estudiante,empresa|nullable|exists:instituciones,id',
         ]);
 
         $usuario = Usuario::create($request->only(['nombre', 'documento', 'tipo', 'institucion_id']));
@@ -82,17 +90,23 @@ class UsuarioController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Usuario $usuario): JsonResponse
+    public function update(Request $request, Usuario $usuario)
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
             'documento' => 'required|string|max:50|unique:usuarios,documento,' . $usuario->id,
             'tipo' => 'required|in:natural,estudiante,empresa',
-            'institucion_id' => 'required|exists:instituciones,id',
+            'institucion_id' => 'required_if:tipo,estudiante,empresa|nullable|exists:instituciones,id',
         ]);
 
         $usuario->update($request->only(['nombre', 'documento', 'tipo', 'institucion_id']));
 
+        // Si la petición espera Inertia, redirigir con mensaje flash
+        if (!$request->wantsJson()) {
+            return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado exitosamente');
+        }
+
+        // Si es API, devolver JSON
         return response()->json([
             'message' => 'Usuario actualizado exitosamente',
             'usuario' => $usuario
@@ -102,7 +116,7 @@ class UsuarioController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Usuario $usuario): JsonResponse
+    public function destroy(Request $request, Usuario $usuario)
     {
         // Verificar si tiene préstamos asociados
         if ($usuario->prestamos()->count() > 0) {
@@ -113,6 +127,12 @@ class UsuarioController extends Controller
 
         $usuario->delete();
 
+        // Si la petición espera Inertia, redirigir con mensaje flash
+        if (!$request->wantsJson()) {
+            return redirect()->route('usuarios.index')->with('success', 'Usuario eliminado exitosamente');
+        }
+
+        // Si es API, devolver JSON
         return response()->json([
             'message' => 'Usuario eliminado exitosamente'
         ]);
