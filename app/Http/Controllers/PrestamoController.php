@@ -62,10 +62,27 @@ class PrestamoController extends Controller
             ], 422);
         }
 
+        // Validar costo según si el usuario tiene institución
+        $usuario = Usuario::with('institucion')->find($request->usuario_id);
+        if ($usuario->institucion) {
+            $costo = 0;
+        } else {
+            $costo = $request->costo;
+            if ($costo <= 0) {
+                return response()->json([
+                    'message' => 'El costo debe ser mayor a 0 para usuarios sin institución'
+                ], 422);
+            }
+        }
+
         // Crear el préstamo
-        $prestamo = Prestamo::create($request->only([
-            'libro_id', 'usuario_id', 'fecha_prestamo', 'fecha_devolucion', 'costo'
-        ]));
+        $prestamo = Prestamo::create([
+            'libro_id' => $request->libro_id,
+            'usuario_id' => $request->usuario_id,
+            'fecha_prestamo' => $request->fecha_prestamo,
+            'fecha_devolucion' => $request->fecha_devolucion,
+            'costo' => $costo,
+        ]);
 
         // Marcar el libro como no disponible
         $libro->update(['disponible' => false]);
