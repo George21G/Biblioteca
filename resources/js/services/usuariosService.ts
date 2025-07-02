@@ -16,7 +16,7 @@ export const usuariosService = {
 
     // Crear un nuevo usuario
     async create(usuario: CreateUsuarioRequest): Promise<Usuario> {
-        const response = await api.post('/usuarios', usuario);
+        const response = await api.post('/api/usuarios', usuario);
         return response.data;
     },
 
