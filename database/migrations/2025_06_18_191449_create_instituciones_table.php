@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('instituciones', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->enum('tipo', ['escuela', 'universidad', 'empresa']);
+            $table->enum('tipo', ['escuela', 'universidad', 'empresa', 'colegio']);
             $table->timestamps();
         });
     }
