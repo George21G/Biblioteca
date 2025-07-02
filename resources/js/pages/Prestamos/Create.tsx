@@ -57,13 +57,14 @@ export default function PrestamosCreate() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingLibros, setIsLoadingLibros] = useState(true);
     const [isLoadingUsuarios, setIsLoadingUsuarios] = useState(true);
+    const [isCostoDisabled, setIsCostoDisabled] = useState(false);
 
     useEffect(() => {
         // Cargar libros disponibles
-        fetch('/api/libros?disponible=true')
+        fetch('/api/libros')
             .then(response => response.json())
             .then(data => {
-                setLibros(data.data || []);
+                setLibros((data || []).filter((libro: any) => libro.disponible));
                 setIsLoadingLibros(false);
             })
             .catch(error => {
@@ -75,7 +76,7 @@ export default function PrestamosCreate() {
         fetch('/api/usuarios')
             .then(response => response.json())
             .then(data => {
-                setUsuarios(data.data || []);
+                setUsuarios(data || []);
                 setIsLoadingUsuarios(false);
             })
             .catch(error => {
@@ -92,6 +93,20 @@ export default function PrestamosCreate() {
         devolucion.setDate(devolucion.getDate() + 15);
         setFormData(prev => ({ ...prev, fecha_devolucion: devolucion.toISOString().split('T')[0] }));
     }, []);
+
+    useEffect(() => {
+        // Si el usuario seleccionado tiene institución, costo = 0 y deshabilitado
+        const usuario = usuarios.find(u => u.id.toString() === formData.usuario_id);
+        if (usuario && usuario.institucion) {
+            setFormData(prev => ({ ...prev, costo: '0' }));
+            setIsCostoDisabled(true);
+        } else if (usuario) {
+            setFormData(prev => ({ ...prev, costo: calcularCosto().toString() }));
+            setIsCostoDisabled(false);
+        } else {
+            setIsCostoDisabled(false);
+        }
+    }, [formData.usuario_id, usuarios, formData.fecha_prestamo, formData.fecha_devolucion]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -219,7 +234,7 @@ export default function PrestamosCreate() {
                                     <SelectContent>
                                         {usuarios.map((usuario) => (
                                             <SelectItem key={usuario.id} value={usuario.id.toString()}>
-                                                {usuario.nombre} - {usuario.documento} 
+                                                {usuario.nombre} - {usuario.documento}
                                                 {usuario.institucion && ` (${usuario.institucion.nombre})`}
                                             </SelectItem>
                                         ))}
@@ -269,6 +284,7 @@ export default function PrestamosCreate() {
                                     onChange={(e) => handleInputChange('costo', e.target.value)}
                                     placeholder="Ingrese el costo del préstamo"
                                     className={errors.costo ? 'border-red-500' : ''}
+                                    disabled={isCostoDisabled}
                                 />
                                 <p className="text-sm text-muted-foreground">
                                     Costo sugerido: ${calcularCosto().toLocaleString()} COP
