@@ -11,7 +11,9 @@ import {
     Eye, 
     Users,
     User,
-    Briefcase
+    Briefcase,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { type BreadcrumbItem } from '@/types';
 
@@ -163,6 +165,48 @@ export default function UsuariosIndex({ usuarios }: Props) {
                         {usuarios.data.length === 0 && (
                             <div className="text-center py-8 text-muted-foreground">
                                 No hay usuarios registrados
+                            </div>
+                        )}
+
+                        {/* Paginación */}
+                        {usuarios.last_page > 1 && (
+                            <div className="flex items-center justify-between mt-6">
+                                <div className="text-sm text-muted-foreground">
+                                    Mostrando {(usuarios.current_page - 1) * usuarios.per_page + 1} a {Math.min(usuarios.current_page * usuarios.per_page, usuarios.total)} de {usuarios.total} resultados
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => router.get('/usuarios', { page: usuarios.current_page - 1 }, { preserveState: true })}
+                                        disabled={usuarios.current_page === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                        Anterior
+                                    </Button>
+                                    <div className="flex items-center space-x-1">
+                                        {Array.from({ length: usuarios.last_page }, (_, i) => i + 1).map((page) => (
+                                            <Button
+                                                key={page}
+                                                variant={page === usuarios.current_page ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => router.get('/usuarios', { page }, { preserveState: true })}
+                                                className="w-8 h-8 p-0"
+                                            >
+                                                {page}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => router.get('/usuarios', { page: usuarios.current_page + 1 }, { preserveState: true })}
+                                        disabled={usuarios.current_page === usuarios.last_page}
+                                    >
+                                        Siguiente
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </CardContent>
