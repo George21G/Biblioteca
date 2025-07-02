@@ -13,8 +13,16 @@ class LibroController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response
+    public function index(Request $request)
     {
+        // Forzar JSON si la ruta es /api/libros
+        if ($request->is('api/libros')) {
+            $libros = Libro::select('id', 'titulo', 'autor', 'isbn', 'disponible')
+                ->orderBy('titulo')
+                ->get();
+            return response()->json($libros);
+        }
+        // Si no, devolver la vista de Inertia
         $libros = Libro::orderBy('titulo')->paginate(10);
         return Inertia::render('Libros/Index', [
             'libros' => $libros
