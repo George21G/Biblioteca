@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save } from 'lucide-react';
 import { type BreadcrumbItem } from '@/types';
+import { institucionesService } from '@/services/institucionesService';
 
 interface Institucion {
     id: number;
@@ -43,11 +44,10 @@ export default function UsuariosCreate() {
     const [isLoadingInstituciones, setIsLoadingInstituciones] = useState(true);
 
     useEffect(() => {
-        // Cargar instituciones
-        fetch('/api/instituciones')
-            .then(response => response.json())
+        // Cargar instituciones usando el servicio
+        institucionesService.getAllSimple()
             .then(data => {
-                setInstituciones(data.data || []);
+                setInstituciones(data || []);
                 setIsLoadingInstituciones(false);
             })
             .catch(error => {
@@ -55,6 +55,13 @@ export default function UsuariosCreate() {
                 setIsLoadingInstituciones(false);
             });
     }, []);
+
+    // Limpiar institucion_id si el tipo es 'natural'
+    useEffect(() => {
+        if (formData.tipo === 'natural') {
+            setFormData(prev => ({ ...prev, institucion_id: '' }));
+        }
+    }, [formData.tipo]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -185,28 +192,31 @@ export default function UsuariosCreate() {
                                 )}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="institucion_id">Institución</Label>
-                                <Select
-                                    value={formData.institucion_id}
-                                    onValueChange={(value) => handleInputChange('institucion_id', value)}
-                                    disabled={isLoadingInstituciones}
-                                >
-                                    <SelectTrigger className={errors.institucion_id ? 'border-red-500' : ''}>
-                                        <SelectValue placeholder={isLoadingInstituciones ? "Cargando instituciones..." : "Seleccione una institución"} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {instituciones.map((institucion) => (
-                                            <SelectItem key={institucion.id} value={institucion.id.toString()}>
-                                                {institucion.nombre} ({institucion.tipo})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.institucion_id && (
-                                    <p className="text-sm text-red-600">{errors.institucion_id}</p>
-                                )}
-                            </div>
+                            {/* Mostrar campo de institución solo si el tipo no es 'natural' */}
+                            {formData.tipo !== 'natural' && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="institucion_id">Institución</Label>
+                                    <Select
+                                        value={formData.institucion_id}
+                                        onValueChange={(value) => handleInputChange('institucion_id', value)}
+                                        disabled={isLoadingInstituciones}
+                                    >
+                                        <SelectTrigger className={errors.institucion_id ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder={isLoadingInstituciones ? "Cargando instituciones..." : "Seleccione una institución"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {instituciones.map((institucion) => (
+                                                <SelectItem key={institucion.id} value={institucion.id.toString()}>
+                                                    {institucion.nombre} ({institucion.tipo})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.institucion_id && (
+                                        <p className="text-sm text-red-600">{errors.institucion_id}</p>
+                                    )}
+                                </div>
+                            )}
 
                             <div className="flex gap-2 pt-4">
                                 <Button type="submit" disabled={isSubmitting || isLoadingInstituciones}>
