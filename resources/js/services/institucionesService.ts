@@ -39,7 +39,7 @@ export const institucionesService = {
 
     // Obtener todas las instituciones (sin paginación para selects)
     async getAllSimple(): Promise<Institucion[]> {
-        const response = await api.get('/instituciones?per_page=1000');
-        return response.data.data;
+        const response = await api.get('/instituciones');
+        return response.data;
     }
 }; 
