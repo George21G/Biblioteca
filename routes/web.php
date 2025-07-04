@@ -24,7 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/instituciones', [InstitucionController::class, 'apiIndex'])->name('instituciones.api');
 
     // Rutas para usuarios
-    Route::resource('usuarios', UsuarioController::class);
+    Route::resource('/usuarios', UsuarioController::class);
     Route::get('api/usuarios', [UsuarioController::class, 'apiIndex'])->name('usuarios.api');
 
     // Rutas para libros
